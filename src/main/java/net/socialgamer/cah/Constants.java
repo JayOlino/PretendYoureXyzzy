@@ -270,8 +270,13 @@ public class Constants {
     @GoDataType("GameOptionData")
     GAME_OPTIONS(AjaxRequest.GAME_OPTIONS),
     GAME_STATE_DESCRIPTION("gss"),
+    GAME_PERMALINK("gp"),
     @GoDataType("[]GameInfo")
     GAMES("gl"),
+    @GoDataType("bool")
+    GAME_CHAT_ENABLED("Gce"),
+    @GoDataType("bool")
+    GLOBAL_CHAT_ENABLED("gce"),
     @GoDataType("[]int")
     HAND("h"),
     @DuplicationAllowed
@@ -307,6 +312,8 @@ public class Constants {
     SERIAL(AjaxRequest.SERIAL),
     @GoDataType("int64")
     SERVER_STARTED("SS"),
+    SESSION_PERMALINK("sP"),
+    USER_PERMALINK("up"),
     @GoDataType("[]int")
     WHITE_CARDS("wc");
 
@@ -396,11 +403,12 @@ public class Constants {
     NOT_REGISTERED("nr", "Not registered. Refresh the page."),
     NOT_YOUR_TURN("nyt", "It is not your turn to play a card."),
     OP_NOT_SPECIFIED("ons", "Operation not specified."),
+    PLAYED_ALL_CARDS("pac", "You already played all the necessary cards!"),
     RESERVED_NICK("rn", "That nick is reserved."),
     REPEAT_MESSAGE("rm",
         "You can't repeat the same message multiple times in a row."),
     REPEATED_WORDS("rW", "You must use more unique words in your message."),
-    SERVER_ERROR("serr", "An error occured on the server."),
+    SERVER_ERROR("serr", "An error occurred on the server."),
     SESSION_EXPIRED("se", "Your session has expired. Refresh the page."),
     TOO_FAST("tf", "You are chatting too fast. Wait a few seconds and try again."),
     TOO_MANY_GAMES("tmg", "There are too many games already in progress. Either join " +
@@ -537,6 +545,8 @@ public class Constants {
     @DuplicationAllowed
     @GoDataType("GameInfo")
     GAME_INFO(AjaxResponse.GAME_INFO),
+    @DuplicationAllowed
+    GAME_PERMALINK(AjaxResponse.GAME_PERMALINK),
     GAME_STATE("gs"),
     @DuplicationAllowed
     @GoDataType("[]WhiteCardData")
@@ -715,7 +725,6 @@ public class Constants {
    * A game's current state.
    */
   public enum GameState implements Localizable {
-    DEALING("d", "In Progress"),
     JUDGING("j", "In Progress"),
     LOBBY("l", "Not Started"),
     PLAYING("p", "In Progress"),

@@ -28,12 +28,22 @@ created for the user now.
 @author Andy Janata (ajanata@socialgamer.net)
 --%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="com.google.inject.Injector" %>
+<%@ page import="com.google.inject.Key" %>
+<%@ page import="com.google.inject.TypeLiteral" %>
 <%@ page import="javax.servlet.http.HttpSession" %>
+<%@ page import="net.socialgamer.cah.CahModule.AllowBlankCards" %>
+<%@ page import="net.socialgamer.cah.RequestWrapper" %>
+<%@ page import="net.socialgamer.cah.StartupUtils" %>
 <%@ page import="net.socialgamer.cah.data.GameOptions" %>
 <%
 // Ensure a session exists for the user.
 @SuppressWarnings("unused")
 HttpSession hSession = request.getSession(true);
+RequestWrapper wrapper = new RequestWrapper(request);
+ServletContext servletContext = pageContext.getServletContext();
+Injector injector = (Injector) servletContext.getAttribute(StartupUtils.INJECTOR);
+boolean allowBlankCards = injector.getInstance(Key.get(new TypeLiteral<Boolean>(){}, AllowBlankCards.class));
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -86,53 +96,22 @@ HttpSession hSession = request.getSession(true);
   <h3>A <a href="http://cardsagainsthumanity.com/">Cards Against Humanity</a> clone.</h3>
   <p>
     This webapp is still in development. There will be bugs, but hopefully they won't affect gameplay
-    very much. To assist with development, <strong>all traffic on this server <em>may</em> be
-    logged.</strong>
+    very much.
   </p>
   <p>
     If this is your first time playing, you may wish to read <a href="index.jsp">the changelog and
     list of known issues</a>.
   </p>
-  <p tabindex="0">Most recent updates: 5 April 2018 and 27 March 2018:</p>
+  <p>
+    Your computer's IP address will <strong>always</strong> be logged when you load the game client.
+    It is not tied in any way to your username, except possibly if a server error occurs. Gameplay
+    results are logged permanently, but without information identifying you.
+  </p>
+  <p tabindex="0">Most recent update: 3 September 2018:</p>
   <ul>
-    <li>Bugfixes from last week's release (most notably, no more "undefined" before your name if you
-    reload the page).</li>
-    <li>Minor updates to the chat filter settings to make it less strict, and an additional chat
-    filter (you cannot use the same word too many times in the same message).</li>
-    <li>Back-end support for other features which will be enabled soon.</li>
-    <li>You may now provide a password-like identification code when connecting to positively
-    identify yourself and make it difficult for someone to impersonate you. Details are on
-    <a href="https://github.com/ajanata/PretendYoureXyzzy/wiki/Identification-Codes">the GitHub
-    wiki.</a><ul>
-      <li><strong>This is optional, and if you choose to not do so, everything will work the same as
-      it always has.</strong></li>
-      <li><strong>Do not use a password you use on any other site.</strong></li>
-      <li>The value you enter in the identification code box will be combined with your username
-      and a server secret and converted into an 11 character code.</li>
-      <li>Users that have an identification code will have a + in front of their name in chat.
-      Hover your mouse over their message to see their 11 character code.</li>
-      <li>You may also use the <span style="font-family:monospace">/whois</span> command in the chat
-      to view information about a user, including their 11 character code.</li></ul></li>
-    <li>Images on CardCast cards is now supported in a safe manner. Cards will need updated to work
-    with this format. Information on how to use it is on the
-    <a href="https://github.com/ajanata/PretendYoureXyzzy/wiki/Cardcast#images-on-cards">GitHub
-    wiki.</a></li>
-    <li><strong>Automatic chat moderation has been added.</strong> This is fairly crude, and limits
-    the following behavior:<ul>
-      <li>(Global only, if enabled) Messages may not contain large amounts of non-Latin characters
-      (emoji spam, etc.).</li>
-      <li>(Global only, if enabled) CAPS LOCK IS NOT ALLOWED EITHER.</li>
-      <li>(Global only, if enabled) Once your message is a certain length, you have to actually use
-      multiple words.</li>
-      <li>Global and game chats now have different messages-per-unit-time settings and counters.
-      </li>
-      <li>You may not repeat the same message multiple times in a row.</li>
-      <li>Certain characters and words will cause a message to be silently dropped (that is, instead
-      of returning an error message to the person who typed it like all of the previous things will,
-      the server will just ignore the message altogether so that user does not know their message
-      was ignored). There are currently two things on this list, and no, I'm not telling you what
-      they are, and no, they're not actually in Git either.</li>
-    </ul></li>
+    <li>All chat and fill-in-the-blank cards have been disabled. If you're still out of the loop,
+    <a href="https://gist.githubusercontent.com/ajanata/07ededdb584f7bb77a8c7191d3a4bbcc/raw/e76faacc19c2bb598a1a8fd94b9ebcb29c5502e0">
+    here's why.</a></li>
   </ul>
   <div id="nickbox">
     <label for="nickname">Nickname:</label>
@@ -502,16 +481,18 @@ HttpSession hSession = request.getSession(true);
         <span class="base_card_sets"></span>
         <span class="extra_card_sets"></span>
       </fieldset>
-      <br/>
-      <label id="blanks_limit_label" title="Blank cards allow a player to type in their own answer.">
-        Also include <select id="blanks_limit_template" class="blanks_limit">
-        <%
-          for (int i = GameOptions.MIN_BLANK_CARD_LIMIT; i <= GameOptions.MAX_BLANK_CARD_LIMIT; i++) {
-        %>
-          <option <%= i == GameOptions.DEFAULT_BLANK_CARD_LIMIT ? "selected='selected' " : "" %>value="<%= i %>"><%= i %></option>
-        <% } %>
-        </select> blank white cards.
-      </label>
+      <% if (allowBlankCards) { %>
+        <br/>
+        <label id="blanks_limit_label" title="Blank cards allow a player to type in their own answer.">
+          Also include <select id="blanks_limit_template" class="blanks_limit">
+          <%
+            for (int i = GameOptions.MIN_BLANK_CARD_LIMIT; i <= GameOptions.MAX_BLANK_CARD_LIMIT; i++) {
+          %>
+            <option <%= i == GameOptions.DEFAULT_BLANK_CARD_LIMIT ? "selected='selected' " : "" %>value="<%= i %>"><%= i %></option>
+          <% } %>
+          </select> blank white cards.
+        </label>
+      <% } %>
       <br/>
       <label id="game_password_template_label" for="game_password_template">Game password:</label>
       <input type="text" id="game_password_template" class="game_password"
